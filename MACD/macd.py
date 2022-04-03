@@ -13,16 +13,25 @@ for s in stonks:
     prices['close'] = prices['close'].values[::-1]
     prices = prices['close']
 
-    n_days = 50
-    mas = prices.rolling(n_days).mean()
+    slow = 26
+    fast = 12
+
+    #calculating moving averages
+    d = prices.ewm(span=slow, adjust=False, min_periods=slow).mean()
+    k = prices.ewm(span=fast, adjust=False, min_periods=fast).mean()
+    macd = d -k
+
+    # #calculating 9 day average OF macd
+    macd_s = macd.ewm(span=9, adjust=False, min_periods=9).mean()
+    macd_h = macd - macd_s
 
     portfolio = [1000.0, 0]
     x = 0
-    for price, ma in zip(prices, mas):
-        if isnan(ma) or isnan(price):
+    for price, m in zip(prices, macd_h):
+        if isnan(m) or isnan(price):
             continue
 
-        if price > ma and portfolio[0] > 0:
+        if m > 0 and portfolio[0] > 0:
             # print(portfolio_value(portfolio, price))
             portfolio[1] = portfolio[0] / price
             portfolio[0] = 0
@@ -35,4 +44,4 @@ for s in stonks:
 
     print("CURRENT STOCK: %s" % (s))
     print('Hold portfolio:\t\t%.2f' % (prices[len(prices) - 1] / prices[0] * 1000))
-    print('MA(%d) portfolio:\t%.2f' % (n_days, portfolio[0] + portfolio[1] * prices[len(prices) - 1]))
+    print('MACD(%d, %d) portfolio:\t%.2f' % (slow, fast, portfolio[0] + portfolio[1] * prices[len(prices) - 1]))
