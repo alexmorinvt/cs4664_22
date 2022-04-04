@@ -103,8 +103,6 @@ for symbol in symbols:
     file_name = "./DATA/%s_%s_2years.csv" % (symbol, interval)
     output.to_csv(file_name, sep=',', encoding='utf-8')
 
-exit()
-
 
 # for y in range(1, 2 + 1):
 #     for m in range (1, 12 + 1):
