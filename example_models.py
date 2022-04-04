@@ -3,7 +3,7 @@ from model import Model
 class Null(Model):
     """Do nothing."""
 
-    def train(self, stocks, texts):
+    def train(self, stock, text):
         """Nothing to fit."""
         pass
     
@@ -19,7 +19,7 @@ class Hold(Model):
         """Handle conversion elsewhere."""
         self.convert = True
 
-    def train(self, stocks, texts):
+    def train(self, stock, text):
         """Nothing to fit."""
         pass
     

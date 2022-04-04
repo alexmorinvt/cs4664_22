@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tcn import TCN, tcn_full_summary # file is named tcn_model.py to avoid conflict with this package
+from tcn import TCN, tcn_full_summary # file is named tcn_ to avoid conflict with this package
 import datetime as dt
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
