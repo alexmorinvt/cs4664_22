@@ -9,28 +9,37 @@ from tqdm import tqdm
 
 # TODO: put this into a function
 # TODO: command-line arguments
+date_start, date_end = '2021-09-07', '2021-09-23'
 
 # Load stock data
 # NOTE: only NFLX (for now)
 # TODO: download data
 stock = [pd.read_csv("./DATA/NFLX_1min_2years.csv")[::-1]]
 # NOTE: only specific section (for now)
-stock = [s[('2021-09-05' <= s.time) & (s.time <= '2021-09-22')] for s in stock]
+for s in stock:
+    s['date_time'] = pd.to_datetime(s.time)
+stock = [s.drop(columns=['Unnamed: 0', 'time']) for s in stock]
+between = lambda d, s, e: d[(s <= d.date_time) & (d.date_time <= e)]
+stock = [between(s, date_start, date_end) for s in stock]
 
 # Load text data
-# TODO: load text data
+text = [pd.read_csv("./DATA/TEXT/netflix_bert_sen.csv", parse_dates=[['date', 'time']])[::-1]]
+text = [t.drop(columns=['Unnamed: 0']) for t in text]
+text = [between(t, date_start, date_end) for t in text]
 
 # Split into train and test
 # TODO: rolling cross-validation
 split = round(len(stock[0]) * 0.8)
 stock_train = [s[:split] for s in stock]
-text_train = [None]
+text_match = lambda stock_data: [between(t, s.iloc[0].date_time, s.iloc[-1].date_time) for s, t in zip(stock_data, text)]
+text_train = text_match(stock_train)
 
 # Create new model
 # TODO: choose which model to load
-from example_models import Null, Hold
-from tcn_model import TCN_
-model = TCN_([0.0])
+# from example_models import Null, Hold
+# from tcn_model import TCN_
+from combine_example import Combine
+model = Combine([0.0])
 
 # Train model
 model.train(stock_train, text_train)
