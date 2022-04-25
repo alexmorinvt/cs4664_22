@@ -30,24 +30,23 @@ class Simulation:
         return self.portfolio[0] * xchg + self.portfolio[1]
 
 
-def evaluate(sim: Simulation, model: Model, stock, text):
+def evaluate(sim: Simulation, model: Model, train_val, index):
     """Train and validate a model."""
     from utils.data import train, valid
     
     # Train the model
-    split = 0.8
-    model.train(*train(stock, text, split))
+    model.train(*train(*train_val, index))
 
     # Validate the model
-    # TODO: rolling cross-validation
     totals = [sim.portfolio[-1]]
-    for stock_test, text_test in valid(stock, text, split):
+    for stock_test, text_test in valid(*train_val, index):
         action = model.test(stock_test, text_test, sim.portfolio)
         xchg = stock_test[0].iloc[-1]['close']
         sim.act(action, xchg, model.convert)
         totals.append(sim.value(xchg))
 
     # Liquidate all assets
-    xchg = stock[0].iloc[-1]['close']
+    xchg = train_val[0][0].iloc[-1]['close']
     total = sim.value(xchg)
     print(f"[ {sim.portfolio[0]:.3f} NFLX,\t ${sim.portfolio[1]:.2f} ]\tTotal: ${total:.2f}")
+    return totals

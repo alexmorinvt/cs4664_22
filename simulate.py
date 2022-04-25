@@ -35,12 +35,12 @@ from combine_example import Combine
 rates = [0.0]
 principal = 1000
 split = 0.8
-model = Hold(rates)
 
 # Evaluate the model
 from utils.simulate import Simulation, evaluate
-sim = Simulation(rates, principal)
-totals = evaluate(sim, model)
+from utils.crossval import none
+for fold, index in none((stock, text), split):
+    totals = evaluate(Simulation(rates, principal), Hold(rates), fold, index)
 
 # Plot assets over time
 import matplotlib.pyplot as plt
