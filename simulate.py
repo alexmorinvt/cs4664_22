@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 # TODO: put this into a function
 # TODO: command-line arguments
+from utils.data import between, text_match, train, valid
 date_start, date_end = '2021-09-07', '2021-09-23'
 
 # Load stock data
@@ -19,7 +20,6 @@ stock = [pd.read_csv("./DATA/NFLX_1min_2years.csv")[::-1]]
 for s in stock:
     s['date_time'] = pd.to_datetime(s.time)
 stock = [s.drop(columns=['Unnamed: 0', 'time']) for s in stock]
-between = lambda d, s, e: d[(s <= d.date_time) & (d.date_time <= e)]
 stock = [between(s, date_start, date_end) for s in stock]
 
 # Load text data
@@ -29,17 +29,15 @@ text = [between(t, date_start, date_end) for t in text]
 
 # Split into train and test
 # TODO: rolling cross-validation
-split = round(len(stock[0]) * 0.8)
-stock_train = [s[:split] for s in stock]
-text_match = lambda stock_data: [between(t, s.iloc[0].date_time, s.iloc[-1].date_time) for s, t in zip(stock_data, text)]
-text_train = text_match(stock_train)
+split = 0.8
+stock_train, text_train = train(stock, text, split)
 
 # Create new model
 # TODO: choose which model to load
-# from example_models import Null, Hold
-# from tcn_model import TCN_
+from example_models import Null, Hold
+from tcn_model import TCN_
 from combine_example import Combine
-model = Combine([0.0])
+model = Hold([0.0])
 
 # Train model
 model.train(stock_train, text_train)
@@ -49,8 +47,7 @@ model.train(stock_train, text_train)
 # TODO: better simulation
 portfolio = [0, 1000]
 totals = [1000]
-for i in range(len(stock_train[0]), len(stock[0])):
-    stock_test = [s[:i+1] for s in stock]
+for stock_test, text_test in valid(stock, text, split):
     action = model.test(stock_test, None, portfolio)
     xchg = stock_test[0].iloc[-1]['close']
     amt = action[0]
@@ -77,4 +74,5 @@ plt.title('%s Portfolio value using TCN' % (s))
 plt.xlabel('Time')
 plt.ylabel('%s Portfolio value' % (s))
 plt.legend()
+plt.savefig('portfolio.pdf')
 plt.show()
