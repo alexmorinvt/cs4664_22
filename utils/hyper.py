@@ -2,6 +2,8 @@ from typing import Type
 from model import Model
 from itertools import product
 from utils.crossval import cross_validate
+import os
+from traceback import print_exc
 from json import dump
 
 
@@ -18,23 +20,47 @@ def sweep(model: Type[Model], **cross_args):
     Produces:
         Validation results in a .json file.
     """
-    results = {'model': model.__name__, 'sweep': list()}
+    results = {
+        'model': model.__name__,
+        'simulation': {
+            'fees': cross_args['sim'].fees,
+            'principal': cross_args['sim'].principal
+        },
+        'validation': {
+            'method': cross_args['partition'].__name__,
+            'split': cross_args['split'],
+            'folds': cross_args['folds']
+        },
+        'sweep': list()
+    }
     filename = SWEEP_DIR + results['model'] + ".json"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
 
     # Try every combination of parameters
     names, configs = zip(*model.config.items())
     for values in product(*(possible(config) for config in configs)):
         params = {name: value for name, value in zip(names, values)}
-
+        print(f"\nParameters: {params}")
+        
         # Run cross-validation with the chosen hyperparameters
-        params['score'] = cross_validate(lambda fees: model(fees, **params), **cross_args)
+        try:
+            params['score'] = cross_validate(lambda fees: model(fees, **params), **cross_args)
+            print(f"Result: ${params['score']:.2f}")
+        except KeyboardInterrupt:
+            break
+        except Exception as e:
+            params['error'] = str(e)
+            print_exc()
         results['sweep'].append(params)
         
         # Save results to a file
         with open(filename, 'w') as outfile:
             dump(results, outfile, indent=4)
-
-    print("Finished sweep!")
+    
+    else:
+        print("Finished sweep!")
+        return
+    print("\nTerminated")
 
 
 def possible(config):
