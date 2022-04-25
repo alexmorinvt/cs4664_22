@@ -38,27 +38,27 @@ for s in stonks:
     model = keras.models.Sequential()
     model.add(keras.layers.LSTM(units=50,return_sequences=True,input_shape=(X_train.shape[1], 1)))
     model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.LSTM(units=50,return_sequences=True))
-    model.add(keras.layers.Dropout(0.2))
-    model.add(keras.layers.LSTM(units=50,return_sequences=True))
-    model.add(keras.layers.Dropout(0.2))
     model.add(keras.layers.LSTM(units=50))
     model.add(keras.layers.Dropout(0.2))
     model.add(keras.layers.Dense(units=1))
-    model.compile(optimizer='adam',loss='mean_squared_error')
+    model.compile(optimizer='adam',loss='mean_squared_error',metrics=[keras.metrics.RootMeanSquaredError(name='rmse'), 'mean_absolute_error'])
     model.fit(X_train,y_train,epochs=20,batch_size=32)
 
     inputs = prices[len(prices) - len(prices_test) - 60:]
     inputs = inputs.reshape(-1,1)
     inputs = Ms.transform(inputs)
     X_test = []
+    y_test = []
     for i in range(60, len(prices_test)):
         X_test.append(inputs[i-60:i, 0])
+        y_test.append(inputs[i][0])
     # print(X_test.shape)
     X_test = np.array(X_test)   
     X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
     predicted_stock_price = model.predict(X_test)
     predicted_stock_price = Ms.inverse_transform(predicted_stock_price)
+
+    model.evaluate(X_test, np.array(y_test))
 
     print(predicted_stock_price)
     plt.plot(prices_test[:50], color = 'black', label = '%s Stock Price' % (s))
