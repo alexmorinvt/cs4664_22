@@ -1,6 +1,24 @@
 from utils.data import segment
 
 
+def cross_validate(model_factory, sim, train_val, partition, **part_args):
+    """Run cross-validation with a given partition method.
+    
+    Args:
+        model_factory: function producing model to evaluate.
+        sim: starting simulation scenario.
+        train_val: data for training and validation.
+        partition: method for partitioning the data.
+        part_args: kwargs for partition function.
+    """
+    from utils.simulate import evaluate
+    scores = []
+    for fold, index in partition(train_val, **part_args):
+        totals = evaluate(model_factory(sim.fees), sim, fold, index)
+        scores.append(totals[-1])
+    return sum(scores) / len(scores)
+
+
 length = lambda train_val: len(train_val[0][0])
 index = lambda train_val, split: round(length(train_val) * split)
 

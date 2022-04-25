@@ -4,10 +4,16 @@ from model import Model
 class Simulation:
     """Run inference based on the given scenario."""    
 
-    def __init__(self, rates: list, principal: float):
+    def __init__(self, fees: list, principal: float):
         """Setup a simulation."""
-        self.rates = rates
-        self.portfolio = [0]*len(rates) + [principal]
+        self.fees = fees
+        self.principal = principal
+        self.reset()
+
+
+    def reset(self):
+        """Load original configuration."""
+        self.portfolio = [0]*len(self.fees) + [self.principal]
 
 
     def act(self, action, xchg, convert):
@@ -30,7 +36,7 @@ class Simulation:
         return self.portfolio[0] * xchg + self.portfolio[1]
 
 
-def evaluate(sim: Simulation, model: Model, train_val, index):
+def evaluate(model: Model, sim: Simulation, train_val, index):
     """Train and validate a model."""
     from utils.data import train, valid
     
@@ -46,7 +52,6 @@ def evaluate(sim: Simulation, model: Model, train_val, index):
         totals.append(sim.value(xchg))
 
     # Liquidate all assets
-    xchg = train_val[0][0].iloc[-1]['close']
-    total = sim.value(xchg)
-    print(f"[ {sim.portfolio[0]:.3f} NFLX,\t ${sim.portfolio[1]:.2f} ]\tTotal: ${total:.2f}")
+    print(f"[ {sim.portfolio[0]:.3f} NFLX,\t ${sim.portfolio[1]:.2f} ]\tTotal: ${totals[-1]:.2f}")
+    sim.reset()
     return totals

@@ -8,5 +8,5 @@ CS4664-env/
 __pycache__/
 
 # Produced output
-**/*.npy
+**/*.json
 **/*.pdf

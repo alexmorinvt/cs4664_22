@@ -9,8 +9,14 @@ from sklearn.preprocessing import MinMaxScaler
 from tensorflow import keras
 import matplotlib.pyplot as plt
 
+
 class TCN_(Model):
     """Stock predict using TCN, use on algo-trading."""
+    config = {
+        "filters": {"min": 8, "max": 128, "by": 2, "log": True},
+        "ker_size": {"min": 1, "max": 16, "by": 2, "log": True},
+    }
+
 
     def train(self, stocks, texts):
         """Train a TCN to predict stock prices."""
@@ -29,8 +35,8 @@ class TCN_(Model):
         X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
         
         self.model = keras.models.Sequential([
-            TCN(input_shape=(X_train.shape[1], 1), nb_filters=10,
-                kernel_size=2,
+            TCN(input_shape=(X_train.shape[1], 1), nb_filters=self.filters,
+                kernel_size=self.ker_size,
                 use_skip_connections=False,
                 use_batch_norm=False,
                 use_weight_norm=False,
@@ -40,7 +46,8 @@ class TCN_(Model):
         ])
         self.model.compile(optimizer='adam',loss='mean_squared_error')
         self.model.fit(X_train,y_train,epochs=20,batch_size=32)
-    
+
+
     def test(self, stocks, texts, portfolio):
         """Predict next day's price and trade."""
         stock = stocks[0]

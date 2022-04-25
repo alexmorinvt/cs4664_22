@@ -16,6 +16,7 @@ def train(stock, text, index):
 
 def valid(stock, text, index):
     """Get each validation point."""
-    for i in range(index, len(stock[0])):
+    from tqdm import trange
+    for i in trange(index, len(stock[0])):
         yield segment(stock, text, 0, i+1)
         

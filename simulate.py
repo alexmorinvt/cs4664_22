@@ -5,7 +5,6 @@ Refer to README.md for installation instructions.
 """
 
 import pandas as pd
-from tqdm import tqdm
 
 # TODO: put this into a function
 # TODO: command-line arguments
@@ -32,15 +31,13 @@ text = [between(t, date_start, date_end) for t in text]
 from example_models import Null, Hold
 from tcn_model import TCN_
 from combine_example import Combine
-rates = [0.0]
-principal = 1000
-split = 0.8
 
 # Evaluate the model
 from utils.simulate import Simulation, evaluate
 from utils.crossval import none
-for fold, index in none((stock, text), split):
-    totals = evaluate(Simulation(rates, principal), Hold(rates), fold, index)
+sim = Simulation([0.0], 1000)
+for fold, index in none((stock, text), 0.8):
+    totals = evaluate(Hold(sim.fees), sim, fold, index)
 
 # Plot assets over time
 import matplotlib.pyplot as plt
@@ -52,3 +49,8 @@ plt.ylabel('%s Portfolio value' % (s))
 plt.legend()
 plt.savefig('portfolio.pdf')
 plt.show()
+
+# Try hyperparameter tuning with TCN model
+from utils.hyper import sweep
+from utils.crossval import sliding
+sweep(TCN_, sim=sim, train_val=(stock, text), partition=sliding, split=0.8, folds=5)
