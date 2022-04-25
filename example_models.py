@@ -1,5 +1,6 @@
 from model import Model
 
+
 class Null(Model):
     """Do nothing."""
 
@@ -15,8 +16,9 @@ class Null(Model):
 class Hold(Model):
     """Go all in and hold forever."""
 
-    def __init__(self, fees):
+    def __init__(self, fees, **hyper):
         """Handle conversion elsewhere."""
+        super().__init__(fees, **hyper)
         self.convert = True
 
     def train(self, stock, text):

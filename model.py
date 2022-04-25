@@ -1,14 +1,21 @@
 from typing import List
 
+
 class Model:
     """Interface for implementing models.
+
     Requires defining the following methods:
     * `__init__`: create new model
     * `train`: find model parameters
     * `test`: make trading predictions
+    
+    Requires defining the following variables:
+    * `config`: hyperparameters for sweeps
     """
+    config = dict()
 
-    def __init__(self, fees: list):
+
+    def __init__(self, fees: list, **hyper):
         """Default constructor.
         
         Create a new model with fresh weights.
@@ -16,9 +23,12 @@ class Model:
         
         self.fees: transaction fees of each stock.
         self.convert: if `test` returns values from -1 to 1.
+        self.[param]: hyperparameters, for each param in hyper.
         """
         self.fees = fees
         self.convert = False
+        self.__dict__.update(hyper)
+
 
     def train(self, stocks: list, texts: list) -> None:
         """Train the model.
@@ -27,11 +37,13 @@ class Model:
 
         Args:
             stock: list of dataframes with the following values:
-                'time', 'open', 'high', 'low', 'close', 'volume'
-            text: list of TODO
+                'date_time', 'open', 'high', 'low', 'close', 'volume'
+            text: list of dataframes with the followming values:
+                'date_time', 'headline', 'positive', 'neutral', 'negative'
         """
         raise NotImplementedError
-    
+
+
     def test(self, stock: list, text: list, portfolio: List[float]) -> List[float]:
         """Test the model.
 

@@ -5,10 +5,10 @@ Refer to README.md for installation instructions.
 """
 
 import pandas as pd
-from tqdm import tqdm
 
 # TODO: put this into a function
 # TODO: command-line arguments
+from utils.data import between
 date_start, date_end = '2021-09-07', '2021-09-23'
 
 # Load stock data
@@ -19,7 +19,6 @@ stock = [pd.read_csv("./DATA/NFLX_1min_2years.csv")[::-1]]
 for s in stock:
     s['date_time'] = pd.to_datetime(s.time)
 stock = [s.drop(columns=['Unnamed: 0', 'time']) for s in stock]
-between = lambda d, s, e: d[(s <= d.date_time) & (d.date_time <= e)]
 stock = [between(s, date_start, date_end) for s in stock]
 
 # Load text data
@@ -27,47 +26,18 @@ text = [pd.read_csv("./DATA/TEXT/netflix_bert_sen.csv", parse_dates=[['date', 't
 text = [t.drop(columns=['Unnamed: 0']) for t in text]
 text = [between(t, date_start, date_end) for t in text]
 
-# Split into train and test
-# TODO: rolling cross-validation
-split = round(len(stock[0]) * 0.8)
-stock_train = [s[:split] for s in stock]
-text_match = lambda stock_data: [between(t, s.iloc[0].date_time, s.iloc[-1].date_time) for s, t in zip(stock_data, text)]
-text_train = text_match(stock_train)
-
 # Create new model
 # TODO: choose which model to load
-# from example_models import Null, Hold
-# from tcn_model import TCN_
+from example_models import Null, Hold
+from tcn_model import TCN_
 from combine_example import Combine
-model = Combine([0.0])
 
-# Train model
-model.train(stock_train, text_train)
-
-# Test model
-# TODO: conversion
-# TODO: better simulation
-portfolio = [0, 1000]
-totals = [1000]
-for i in range(len(stock_train[0]), len(stock[0])):
-    stock_test = [s[:i+1] for s in stock]
-    action = model.test(stock_test, None, portfolio)
-    xchg = stock_test[0].iloc[-1]['close']
-    amt = action[0]
-    if model.convert:
-        if amt > 0:
-            amt *= portfolio[-1] / xchg
-        elif amt < 0:
-            amt *= portfolio[0]
-    portfolio[0] += amt
-    portfolio[1] -= amt * xchg
-    assert(p >= 0 for p in portfolio)
-    totals.append(portfolio[0] * xchg + portfolio[1])
-
-# Liquidate all assets
-xchg = stock[0].iloc[-1]['close']
-total = portfolio[0] * xchg + portfolio[1]
-print(f"[ {portfolio[0]:.3f} NFLX,\t ${portfolio[1]:.2f} ]\tTotal: ${total:.2f}")
+# Evaluate the model
+from utils.simulate import Simulation, evaluate
+from utils.crossval import none
+sim = Simulation([0.0], 1000)
+for fold, index in none((stock, text), 0.8):
+    totals = evaluate(Hold(sim.fees), sim, fold, index)
 
 # Plot assets over time
 import matplotlib.pyplot as plt
@@ -77,4 +47,10 @@ plt.title('%s Portfolio value using TCN' % (s))
 plt.xlabel('Time')
 plt.ylabel('%s Portfolio value' % (s))
 plt.legend()
+plt.savefig('portfolio.pdf')
 plt.show()
+
+# Try hyperparameter tuning with TCN model
+from utils.hyper import sweep
+from utils.crossval import sliding
+sweep(TCN_, sim=sim, train_val=(stock, text), partition=sliding, split=0.8, folds=5)

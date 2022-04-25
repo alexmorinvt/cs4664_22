@@ -8,6 +8,5 @@ CS4664-env/
 __pycache__/
 
 # Produced output
-log.txt
-*.json
-*.eps
+**/*.json
+**/*.pdf
