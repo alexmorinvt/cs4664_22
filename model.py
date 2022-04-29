@@ -12,7 +12,7 @@ class Model:
     Requires defining the following variables:
     * `config`: hyperparameters for sweeps
     """
-    config = dict()
+    config = {'null': {'min': 0, 'max': 0, 'by': 1, 'log': False}}
 
 
     def __init__(self, fees: list, **hyper):

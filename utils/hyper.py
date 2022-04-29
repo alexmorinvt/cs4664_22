@@ -5,6 +5,7 @@ from utils.crossval import cross_validate
 import os
 from traceback import print_exc
 from json import dump
+from example_models import Hold
 
 
 SWEEP_DIR = "./SWEEPS/"
@@ -20,18 +21,33 @@ def sweep(model: Type[Model], **cross_args):
     Produces:
         Validation results in a .json file.
     """
+    stock, text = cross_args['train_val']
+    assert(len(stock) == len(text))
+    for s, t in zip(stock, text):
+        assert(s.columns.name == t.columns.name)
+    if 'baseline_factory' not in cross_args:
+        cross_args['baseline_factory'] = lambda fees: Hold(fees)
     results = {
         'model': model.__name__,
         'simulation': {
             'fees': cross_args['sim'].fees,
-            'principal': cross_args['sim'].principal
+            'principal': cross_args['sim'].principal,
         },
         'validation': {
             'method': cross_args['partition'].__name__,
             'split': cross_args['split'],
-            'folds': cross_args['folds']
+            'folds': cross_args['folds'],
         },
-        'sweep': list()
+        'data': {
+            'stock': [s.columns.name for s in stock],
+            'len_stock': [len(s) for s in stock],
+            'len_text': [len(t) for t in text],
+            'begin': str(min(s.iloc[0].date_time for s in stock)),
+            'end': str(max(s.iloc[-1].date_time for s in stock)),
+        },
+        'baseline': cross_args['baseline_factory'](cross_args['sim'].fees).__class__.__name__
+            if cross_args['baseline_factory'] is not None else 'None',
+        'sweep': list(),
     }
     filename = SWEEP_DIR + results['model'] + ".json"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
