@@ -27,7 +27,7 @@ def cross_validate(model_factory, baseline_factory, sim, train_val, partition, *
     return sum(scores) / len(scores)
 
 
-length = lambda train_val: len(train_val[0][0])
+length = lambda train_val: len(train_val[0][0]) if train_val and train_val[0] else 0
 index = lambda train_val, split: round(length(train_val) * split)
 
 

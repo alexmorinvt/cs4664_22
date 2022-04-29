@@ -1,0 +1,110 @@
+{
+    "model": "TCN_",
+    "simulation": {
+        "fees": [
+            0.0
+        ],
+        "principal": 1000
+    },
+    "validation": {
+        "method": "sliding",
+        "split": 0.8,
+        "folds": 5
+    },
+    "data": {
+        "stock": [
+            "NFLX"
+        ],
+        "len_stock": [
+            5233
+        ],
+        "len_text": [
+            99
+        ],
+        "begin": "2021-09-07 04:11:00",
+        "end": "2021-09-22 20:00:00"
+    },
+    "baseline": "Hold",
+    "sweep": [
+        {
+            "filters": 8,
+            "ker_size": 1,
+            "score": 0.0027135356006569434
+        },
+        {
+            "filters": 8,
+            "ker_size": 2,
+            "score": 0.006301893840124852
+        },
+        {
+            "filters": 8,
+            "ker_size": 4,
+            "score": 0.005460741953320981
+        },
+        {
+            "filters": 8,
+            "ker_size": 8,
+            "score": 0.005452339712389358
+        },
+        {
+            "filters": 8,
+            "ker_size": 16,
+            "score": 0.0031477882488526233
+        },
+        {
+            "filters": 16,
+            "ker_size": 1,
+            "score": 0.003026142100819888
+        },
+        {
+            "filters": 16,
+            "ker_size": 2,
+            "score": 0.0021501069332053326
+        },
+        {
+            "filters": 16,
+            "ker_size": 4,
+            "score": 0.005886541654061563
+        },
+        {
+            "filters": 16,
+            "ker_size": 8,
+            "score": 0.005073265103687605
+        },
+        {
+            "filters": 16,
+            "ker_size": 16,
+            "score": 0.003056789421341056
+        },
+        {
+            "filters": 32,
+            "ker_size": 1,
+            "score": 0.006680987135855741
+        },
+        {
+            "filters": 32,
+            "ker_size": 2,
+            "score": 0.002435681858990865
+        },
+        {
+            "filters": 32,
+            "ker_size": 4,
+            "score": 0.00164925630278027
+        },
+        {
+            "filters": 32,
+            "ker_size": 8,
+            "score": 0.0033994552567353257
+        },
+        {
+            "filters": 32,
+            "ker_size": 16,
+            "score": 0.0053588778848896465
+        },
+        {
+            "filters": 64,
+            "ker_size": 1,
+            "score": 0.0016085542179916919
+        }
+    ]
+}

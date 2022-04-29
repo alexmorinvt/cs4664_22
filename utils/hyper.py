@@ -108,8 +108,8 @@ def gen_config(model: Type[Model], cross_args):
             'stock': [s.columns.name for s in stock],
             'len_stock': [len(s) for s in stock],
             'len_text': [len(t) for t in text],
-            'begin': str(min(s.iloc[0].date_time for s in stock)),
-            'end': str(max(s.iloc[-1].date_time for s in stock)),
+            'begin': str(min((s.iloc[0].date_time for s in stock), default=None)),
+            'end': str(max((s.iloc[-1].date_time for s in stock), default=None)),
         },
         'baseline': cross_args['baseline_factory'](cross_args['sim'].fees).__class__.__name__
             if cross_args['baseline_factory'] is not None else 'None',

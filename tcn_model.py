@@ -20,6 +20,7 @@ class TCN_(Model):
 
     def train(self, stocks, texts):
         """Train a TCN to predict stock prices."""
+        if not stocks: return
         stock = stocks[0]
         prices = stock['close'].values[::].reshape(len(stock), 1)
         self.Ms = MinMaxScaler(feature_range=(0,1))
@@ -50,6 +51,7 @@ class TCN_(Model):
 
     def test(self, stocks, texts, portfolio):
         """Predict next day's price and trade."""
+        if not stocks: return 0
         stock = stocks[0]
         prices = stock['close'].values[::].reshape(len(stock), 1)
         inputs = prices[-60:]

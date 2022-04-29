@@ -4,36 +4,12 @@ Partly based on our work for MCM 2022 problem C.
 Refer to README.md for installation instructions.
 """
 
-import pandas as pd
-
-# TODO: put this into a function
 # TODO: command-line arguments
-from utils.data import between
-
 # NOTE: only NFLX (for now)
 # NOTE: only specific section (for now)
+from utils.data import load_data
 names = ['NFLX']
-date_start, date_end = '2021-09-07', '2021-09-23'
-
-# TODO: download data
-
-stock, text = [], []
-for name in names:
-
-    # Load stock data
-    s = pd.read_csv(f"./DATA/{name}_1min_2years.csv")[::-1]
-    s.columns.name = name
-    s['date_time'] = pd.to_datetime(s.time)
-    s.drop(columns=['Unnamed: 0', 'time'], inplace=True)
-    s = between(s, date_start, date_end)
-    stock.append(s)
-
-    # Load text data
-    t = pd.read_csv(f"./DATA/TEXT/{name}_bert_sen.csv", parse_dates=[['date', 'time']])[::-1]
-    t.columns.name = name
-    t.drop(columns=['Unnamed: 0'], inplace=True)
-    t = between(t, date_start, date_end)
-    text.append(t)
+stock, text = load_data(names, '2021-09-07', '2021-09-23')
 
 # Create new model
 # TODO: choose which model to load

@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import os
 import csv
 import requests
 import pandas as pd
@@ -22,14 +25,12 @@ def request_stock_price_hist(symbol, interval = None, y = 1, m = 1, daily = Fals
             headers = reader.__next__()
             headers = headers[0].split(',')
 
-            df = pd.DataFrame(columns=list(range(6)))
-            
+            rows = list()
             for row in reader:
                 row = row[0].split(",")
-                a_series = pd.Series(row, index = df.columns)
-                df = df.append(a_series, ignore_index=True) 
-            df.columns = headers
-            return df
+                a_series = pd.Series(row, index = headers)
+                rows.append(a_series)
+            return pd.DataFrame(rows)
 
         else:
             download = s.get(CSV_URL)
@@ -39,14 +40,12 @@ def request_stock_price_hist(symbol, interval = None, y = 1, m = 1, daily = Fals
             headers = reader.__next__()
             headers = headers[0].split(',')
 
-            df = pd.DataFrame(columns=list(range(6)))
-            
+            rows = list()
             for row in reader:
                 row = row[0].split(",")
-                a_series = pd.Series(row, index = df.columns)
-                df = df.append(a_series, ignore_index=True) 
-            df.columns = headers
-            return df
+                a_series = pd.Series(row, index = headers)
+                rows.append(a_series)
+            return pd.DataFrame(rows)
 
         download = s.get(CSV_URL)
 
@@ -58,7 +57,7 @@ def request_stock_price_hist(symbol, interval = None, y = 1, m = 1, daily = Fals
         # headers = headers[0].split(',')
         # print(headers)
         
-        df = pd.DataFrame(columns=list(range(6)))
+        rows = list()
         i = 0
         for row in reader:
             row = row[0].split(",")
@@ -68,41 +67,45 @@ def request_stock_price_hist(symbol, interval = None, y = 1, m = 1, daily = Fals
                 print(headers)
                 continue
             try:
-                a_series = pd.Series(row, index = df.columns)
+                a_series = pd.Series(row, index = headers)
             except:
                 continue
-            df = df.append(a_series, ignore_index=True) 
+            rows.append(a_series) 
             i = i+1
-        df.columns = headers
-        return df
+        return pd.DataFrame(rows)
     
         decoded_content = download.content.decode('utf-8')
         reader = csv.reader(decoded_content.splitlines(), delimiter='\n')
         my_list = list(reader)
 
-        
-symbols = ['MMM', 'UAL', 'NFLX', 'INTC']
-interval = "1min"
 
-output = pd.DataFrame(columns=['1'])
-for symbol in symbols:
-    print(symbol)
-    output = request_stock_price_hist(symbol, '', 0, 0, daily = True)
-    file_name = "./DATA/%s_%s.csv" % (symbol, 'daily')
-    output.to_csv(file_name, sep=',', encoding='utf-8')
+DATA_DIR = "./DATA/"
 
-    output = pd.DataFrame()
-    for year in range(1, 2 + 1):
-        for month in range(1, 12 + 1):
-            if output.empty:
-                output = request_stock_price_hist(symbol, interval, year, month)
-            else:
-                output = pd.concat([output, request_stock_price_hist(symbol, interval, year, month)], ignore_index=True)
-            print(year, month, flush=True)
 
-    file_name = "./DATA/%s_%s_2years.csv" % (symbol, interval)
-    output.to_csv(file_name, sep=',', encoding='utf-8')
+def download_data(symbols, interval="1min"):
+    os.makedirs(os.path.dirname(DATA_DIR), exist_ok=True)
+    output = pd.DataFrame(columns=['1'])
+    for symbol in symbols:
+        print(symbol)
+        #output = request_stock_price_hist(symbol, '', 0, 0, daily = True)
+        file_name = "%s%s_%s.csv" % (DATA_DIR, symbol, 'daily')
+        output.to_csv(file_name, sep=',', encoding='utf-8')
 
+        output = pd.DataFrame()
+        for year in range(1, 2 + 1):
+            for month in range(1, 12 + 1):
+                if output.empty:
+                    output = request_stock_price_hist(symbol, interval, year, month)
+                else:
+                    output = pd.concat([output, request_stock_price_hist(symbol, interval, year, month)], ignore_index=True)
+                print(year, month, flush=True)
+
+        file_name = "%s%s_%s_2years.csv" % (DATA_DIR, symbol, interval)
+        output.to_csv(file_name, sep=',', encoding='utf-8')
+
+
+if __name__ == '__main__':
+    download_data(['MMM', 'UAL', 'NFLX', 'INTC'])
 
 # for y in range(1, 2 + 1):
 #     for m in range (1, 12 + 1):
