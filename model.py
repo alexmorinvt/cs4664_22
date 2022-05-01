@@ -60,3 +60,20 @@ class Model:
             Amount to buy/sell for each stock
         """
         raise NotImplementedError
+    
+
+    def test_all(self, stock, text, index):
+        """Super secret function (test model in parallel).
+        
+        Receive all test data and do necessary preprocessing.
+        Portfolios will still be visible through later calls to `test`.
+
+        WARNING: this makes it really easy to introduce bias.
+        Make sure you know what you're doing!
+
+        Args:
+            stock, text: same as in `test`.
+                Only the last of the provided points.
+            index: location of train-validation split.
+        """
+        pass

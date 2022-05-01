@@ -42,6 +42,7 @@ def evaluate(model: Model, sim: Simulation, train_val, index):
     
     # Train the model
     model.train(*train(*train_val, index))
+    model.test_all(*train_val, index)
 
     # Validate the model
     totals = [sim.portfolio[-1]]
