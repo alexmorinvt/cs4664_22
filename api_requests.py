@@ -79,7 +79,7 @@ def request_stock_price_hist(symbol, interval = None, y = 1, m = 1, daily = Fals
         my_list = list(reader)
 
 
-DATA_DIR = "./DATA/"
+DATA_DIR = "./DATA_APRIL/"
 
 
 def download_data(symbols, interval="1min"):
@@ -87,21 +87,21 @@ def download_data(symbols, interval="1min"):
     output = pd.DataFrame(columns=['1'])
     for symbol in symbols:
         print(symbol)
-        #output = request_stock_price_hist(symbol, '', 0, 0, daily = True)
+        output = request_stock_price_hist(symbol, '', 0, 0, daily = True)
         file_name = "%s%s_%s.csv" % (DATA_DIR, symbol, 'daily')
         output.to_csv(file_name, sep=',', encoding='utf-8')
 
-        output = pd.DataFrame()
-        for year in range(1, 2 + 1):
-            for month in range(1, 12 + 1):
-                if output.empty:
-                    output = request_stock_price_hist(symbol, interval, year, month)
-                else:
-                    output = pd.concat([output, request_stock_price_hist(symbol, interval, year, month)], ignore_index=True)
-                print(year, month, flush=True)
+        # output = pd.DataFrame()
+        # for year in range(1, 2 + 1):
+        #     for month in range(1, 12 + 1):
+        #         if output.empty:
+        #             output = request_stock_price_hist(symbol, interval, year, month)
+        #         else:
+        #             output = pd.concat([output, request_stock_price_hist(symbol, interval, year, month)], ignore_index=True)
+        #         print(year, month, flush=True)
 
-        file_name = "%s%s_%s_2years.csv" % (DATA_DIR, symbol, interval)
-        output.to_csv(file_name, sep=',', encoding='utf-8')
+        # file_name = "%s%s_%s_2years.csv" % (DATA_DIR, symbol, interval)
+        # output.to_csv(file_name, sep=',', encoding='utf-8')
 
 
 if __name__ == '__main__':
