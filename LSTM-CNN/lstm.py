@@ -76,7 +76,7 @@ for (s, vol) in stonks:
     trade_length = min(len(predicted_stock_price), len(y_test))
 
     initial_trade = False
-    if vol:
+    if vol: # To determine this variable, we tested the previous 200 days (before March 13, I believe) and decided which category to assign
         for i in range(1, trade_length):
             if predicted_stock_price[i] > predicted_stock_price[i-1] and P[0] > 0:
                 P[1] = P[0] / y_test[i]
