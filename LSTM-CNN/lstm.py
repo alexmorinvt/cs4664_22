@@ -10,7 +10,7 @@ import sys
 from tensorflow import keras
 import matplotlib.pyplot as plt
 
-callback = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=4)
+# callback = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=7)
 
 sliding_window = 30
 stonks = ['INTC']
@@ -40,19 +40,17 @@ for s in stonks:
     
     model = keras.models.Sequential()
     model.add(keras.layers.Conv1D(32, 3))
-    model.add(keras.layers.AvgPool1D(2))
-    model.add(keras.layers.LSTM(units=50,return_sequences=True))
-    model.add(keras.layers.Dropout(0.2))
+    model.add(keras.layers.AvgPool1D(3))
     model.add(keras.layers.LSTM(units=50,return_sequences=True))
     model.add(keras.layers.Dropout(0.2))
     model.add(keras.layers.LSTM(units=50))
     model.add(keras.layers.Dropout(0.2))
     model.add(keras.layers.Dense(units=1))
 
-    # opt = keras.optimizers.Adam(learning_rate=0.002)
-    opt = keras.optimizers.RMSprop()
+    opt = keras.optimizers.Adam(learning_rate=0.0005)
+    # opt = keras.optimizers.RMSprop()
     model.compile(optimizer=opt,loss='mse', metrics=[keras.metrics.RootMeanSquaredError(name='rmse'), 'mean_absolute_error'])
-    model.fit(X_train,y_train,epochs=50,batch_size=32,callbacks=[callback],validation_split=0.1)
+    model.fit(X_train,y_train,epochs=50,batch_size=32,validation_split=0.1) #callback not included
 
     inputs = prices[len(prices) - len(prices_test) - sliding_window:]
     inputs = inputs.reshape(-1,1)

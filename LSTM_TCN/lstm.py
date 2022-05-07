@@ -61,8 +61,8 @@ for s in stonks:
     model.evaluate(X_test, np.array(y_test))
 
     print(predicted_stock_price)
-    plt.plot(prices_test[:50], color = 'black', label = '%s Stock Price' % (s))
-    plt.plot(predicted_stock_price[:50], color = 'green', label = 'Predicted %s Stock Price' % (s))
+    plt.plot(prices_test[:200], color = 'black', label = '%s Stock Price' % (s))
+    plt.plot(predicted_stock_price[:200], color = 'green', label = 'Predicted %s Stock Price' % (s))
     plt.title('%s Stock Price Prediction' % (s))
     plt.xlabel('Time')
     plt.ylabel('%s Stock Price' % (s))
