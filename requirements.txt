@@ -3,5 +3,5 @@ tqdm
 python-dateutil
 mplfinance
 sklearn
-tensorflow
+tensorflow-gpu
 keras-tcn

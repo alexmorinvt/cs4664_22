@@ -11,11 +11,13 @@ Spring '22 ML Capstone Project
 * `python`
 * `pip`
 * `venv`
+* `git lfs`
 
 Example install script:
 ```bash
 sudo apt-get update
-sudo apt-get install libpython3-dev python3-pip python3-venv
+sudo apt-get install libpython3-dev python3-pip python3-venv git-lfs
+git lfs install && git lfs pull
 ```
 
 ## Installation

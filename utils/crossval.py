@@ -2,7 +2,7 @@ from math import log10
 from utils.data import segment
 
 
-def cross_validate(model_factory, baseline_factory, sim, train_val, partition, **part_args):
+def cross_validate(model_factory, baseline_factory, sim, train_val, partition, baseline_hyper={}, **part_args):
     """Run cross-validation with a given partition method.
     
     Args:
@@ -11,6 +11,7 @@ def cross_validate(model_factory, baseline_factory, sim, train_val, partition, *
         sim: starting simulation scenario.
         train_val: data for training and validation.
         partition: method for partitioning the data.
+        basesine_hyper: inference hyperparameters for baseline.
         part_args: kwargs for partition function.
     
     Returns:
@@ -21,7 +22,7 @@ def cross_validate(model_factory, baseline_factory, sim, train_val, partition, *
     for fold, index in partition(train_val, **part_args):
         score = evaluate(model_factory(sim.fees), sim, fold, index)[-1]
         if model_factory is not None:
-            score /= evaluate(baseline_factory(sim.fees), sim, fold, index)[-1]
+            score /= evaluate(baseline_factory(sim.fees), sim, fold, index, **baseline_hyper)[-1]
             score = log10(score)
         scores.append(score)
     return sum(scores) / len(scores)

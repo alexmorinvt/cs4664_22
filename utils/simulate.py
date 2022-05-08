@@ -36,18 +36,18 @@ class Simulation:
         return self.portfolio[0] * xchg + self.portfolio[1]
 
 
-def evaluate(model: Model, sim: Simulation, train_val, index):
+def evaluate(model: Model, sim: Simulation, train_val, index, **test_kwargs):
     """Train and validate a model."""
     from utils.data import train, valid
     
     # Train the model
     model.train(*train(*train_val, index))
-    model.test_all(*train_val, index)
+    model.test_all(*train_val, index, **test_kwargs)
 
     # Validate the model
     totals = [sim.portfolio[-1]]
     for stock_test, text_test in valid(*train_val, index):
-        action = model.test(stock_test, text_test, sim.portfolio)
+        action = model.test(stock_test, text_test, sim.portfolio, **test_kwargs)
         xchg = stock_test[0].iloc[-1]['close']
         sim.act(action, xchg, model.convert)
         totals.append(sim.value(xchg))

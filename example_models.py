@@ -8,7 +8,7 @@ class Null(Model):
         """Nothing to fit."""
         pass
     
-    def test(self, stock, text, portfolio):
+    def test(self, stock, text, portfolio, **hyper):
         """Nothing to do."""
         return [0] * len(stock)
 
@@ -25,6 +25,6 @@ class Hold(Model):
         """Nothing to fit."""
         pass
     
-    def test(self, stock, text, portfolio):
+    def test(self, stock, text, portfolio, **hyper):
         """Buy equal amounts."""
         return [portfolio[-1] and 1 / len(stock)] * len(stock)
