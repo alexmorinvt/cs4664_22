@@ -30,28 +30,32 @@ def sweep(model: Type[Model], **cross_args):
     previous = check_previous(filename, results)
 
     # Try every combination of parameters
-    names, configs = zip(*model.config.items())
-    for values in product(*(possible(config) for config in configs)):
-        params = {name: value for name, value in zip(names, values)}
+    for params in all_possible(model.config, True):
         print(f"\nParameters: {params}")
         
         # Check if result already exists
         found = None
         def not_found(item):
             nonlocal found
-            score = item['score']
-            del item['score']
+            if not hasattr(item, 'scores'):
+                return False
+            score = item['scores']
+            del item['scores']
             if fnd := item == params:
                 print("Found in previous sweep")
                 found = score
-            item['score'] = score
+            item['scores'] = score
             return not fnd
         previous = list(filter(not_found, previous))
 
         # Run cross-validation with the chosen hyperparameters
         try:
-            params['score'] = found or cross_validate(lambda fees: model(fees, **params), **cross_args)
-            print(f"Result: {params['score']}")
+            if not found:
+                found = list(all_possible(model.config, False))
+                scores = cross_validate(lambda fees: model(fees, **params), model_hypers=found, **cross_args)
+                for pars, score in zip(found, scores):
+                    pars['score'] = score
+            params['scores'] = found
         except KeyboardInterrupt:
             break
         except Exception as e:
@@ -67,6 +71,13 @@ def sweep(model: Type[Model], **cross_args):
         print("Finished sweep!")
         return
     print("\nTerminated")
+
+
+def all_possible(model_config, train=True):
+    conf = {name: config for name, config in model_config.items() if config['train'] == train}
+    names, configs = zip(*conf.items())
+    for values in product(*(possible(config) for config in configs)):
+        yield {name: value for name, value in zip(names, values)}
 
 
 def possible(config):

@@ -36,23 +36,27 @@ class Simulation:
         return self.portfolio[0] * xchg + self.portfolio[1]
 
 
-def evaluate(model: Model, sim: Simulation, train_val, index, **test_kwargs):
+def evaluate(model: Model, sim: Simulation, train_val, index, hypers=[{}]):
     """Train and validate a model."""
     from utils.data import train, valid
     
     # Train the model
     model.train(*train(*train_val, index))
-    model.test_all(*train_val, index, **test_kwargs)
+    all_totals = []
+    for hyper in hypers:
+        print(f"Inference: {hyper}")
+        model.test_all(*train_val, index, **hyper)
 
-    # Validate the model
-    totals = [sim.portfolio[-1]]
-    for stock_test, text_test in valid(*train_val, index):
-        action = model.test(stock_test, text_test, sim.portfolio, **test_kwargs)
-        xchg = stock_test[0].iloc[-1]['close']
-        sim.act(action, xchg, model.convert)
-        totals.append(sim.value(xchg))
+        # Validate the model
+        totals = [sim.portfolio[-1]]
+        for stock_test, text_test in valid(*train_val, index):
+            action = model.test(stock_test, text_test, sim.portfolio, **hyper)
+            xchg = stock_test[0].iloc[-1]['close']
+            sim.act(action, xchg, model.convert)
+            totals.append(sim.value(xchg))
 
-    # Liquidate all assets
-    print(f"[ {sim.portfolio[0]:.3f} NFLX,\t ${sim.portfolio[1]:.2f} ]\tTotal: ${totals[-1]:.2f}")
-    sim.reset()
-    return totals
+        # Liquidate all assets
+        print(f"[ {sim.portfolio[0]:.3f} NFLX,\t ${sim.portfolio[1]:.2f} ]\tTotal: ${totals[-1]:.2f}")
+        sim.reset()
+        all_totals.append(totals)
+    return all_totals

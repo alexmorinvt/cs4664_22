@@ -12,8 +12,8 @@ class TCN_(Model):
         'filters': {'min': 16, 'max': 64, 'by': 2, 'log': True, 'train': True},
         'ker_size': {'min': 2, 'max': 8, 'by': 2, 'log': True, 'train': True},
         'window': {'min': 25, 'max': 100, 'by': 25, 'log': False, 'train': True},
-        'alpha': {'min': 1e2, 'max': 128e2, 'by': 2, 'log': True, 'train': False},
         'all_in': {'min': 0, 'max': 1, 'by': 1, 'log': False, 'train': False},
+        'alpha': {'min': 1e2, 'max': 128e2, 'by': 2, 'log': True, 'train': False},
     }
 
 
@@ -62,7 +62,9 @@ class TCN_(Model):
 
     def test_all(self, stock, text, index, **hyper):
         """Predict in batches using the model."""
-        if not stock: return 0
+        self.test_idx = 0
+        if hasattr(self, 'pred'): return
+        if not stock: return
         stock = stock[0]
         self.pred = np.zeros((stock.shape[0]-index, 1))
         prices = stock['close'].values[::].reshape(len(stock), 1)
@@ -73,4 +75,3 @@ class TCN_(Model):
         predicted_diff = self.model(np.array(X_test))
         predicted_diff = self.Ms.inverse_transform(predicted_diff)
         self.pred[-predicted_diff.shape[0]:] = predicted_diff
-        self.test_idx = 0

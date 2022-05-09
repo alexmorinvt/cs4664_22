@@ -12,7 +12,7 @@ class Model:
     Requires defining the following variables:
     * `config`: hyperparameters for sweeps
     """
-    config = {'null': {'min': 0, 'max': 0, 'by': 1, 'log': False}}
+    config = {'null': {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': True}}
 
 
     def __init__(self, fees: list, **hyper):
@@ -63,7 +63,7 @@ class Model:
         raise NotImplementedError
 
 
-    def test_all(self, stock, text, index):
+    def test_all(self, stock, text, index, **hyper):
         """Super secret function (test model in parallel).
         
         Receive all test data and do necessary preprocessing.
@@ -76,5 +76,6 @@ class Model:
             stock, text: same as in `test`.
                 Only the last of the provided points.
             index: location of train-validation split.
+            hyper: inference hyperparameters.
         """
         pass
