@@ -5,25 +5,29 @@ Refer to README.md for installation instructions.
 """
 
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 
 # TODO: put this into a function
 # TODO: command-line arguments
-date_start, date_end = '2021-09-07', '2021-09-23'
+date_start, date_end = '2016-08-23', '2023-12-10'
 
 # Load stock data
 # NOTE: only NFLX (for now)
 # TODO: download data
-stock = [pd.read_csv("./DATA/NFLX_1min_2years.csv")[::-1]]
+stock = [pd.read_csv("./DATA/NFLX_daily.csv")[::-1]]
 # NOTE: only specific section (for now)
 for s in stock:
-    s['date_time'] = pd.to_datetime(s.time)
-stock = [s.drop(columns=['Unnamed: 0', 'time']) for s in stock]
+    s['date_time'] = pd.to_datetime(s.timestamp)
+stock = [s.drop(columns=['Unnamed: 0', 'timestamp']) for s in stock]
 between = lambda d, s, e: d[(s <= d.date_time) & (d.date_time <= e)]
 stock = [between(s, date_start, date_end) for s in stock]
 
 # Load text data
-text = [pd.read_csv("./DATA/TEXT/netflix_bert_sen.csv", parse_dates=[['date', 'time']])[::-1]]
+#text = [pd.read_csv("./DATA/TEXT/netflix_bert_sen.csv", parse_dates=[['date', 'time']])[::-1]]
+text = [pd.read_csv("./DATA/netflix.csv")[::-1]]
+for t in text:
+    t['date_time'] = pd.to_datetime(s.date_time)
 text = [t.drop(columns=['Unnamed: 0']) for t in text]
 text = [between(t, date_start, date_end) for t in text]
 
@@ -42,7 +46,10 @@ from combine_example import Combine
 model = Combine([0.0])
 
 # Train model
-model.train(stock_train, text_train)
+table=model.train(stock_train, text_train)
+#df = pd.DataFrame(np.asarray(table).reshape(99, 10), columns=['open','high','low','close','volume','date_time','headline','positive','negative','neutral'])
+df = pd.DataFrame(np.asarray(table).reshape(1130, 7), columns=['open','high','low','close','volume','date_time','title'])
+df.to_csv('./nlpZoe/new_combine.csv')
 
 # Test model
 # TODO: conversion

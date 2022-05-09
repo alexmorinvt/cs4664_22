@@ -6,8 +6,10 @@ class Combine(Model):
 
     def train(self, stock, text):
         """Combine data and print."""
+        #combined = [s.dropna() for s in combine(stock, text, fillna=False)] # Also try fillna=True
         combined = combine(stock, text) # Also try fillna=True
         print(combined)
+        return combined
     
     def test(self, stock, text, portfolio):
         """TODO: something."""
