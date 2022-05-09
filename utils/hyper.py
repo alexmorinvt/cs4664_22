@@ -7,19 +7,21 @@ from json import dump, load, JSONDecodeError
 import os
 
 from utils.crossval import cross_validate
-from model import Model
-from example_models import Hold
+from models import Model
+from models import Hold
 
 
 SWEEP_DIR = "./SWEEPS/"
 
-def sweep(model: Type[Model], **cross_args):
+def sweep(model: Type[Model], eval, **cross_args):
     """Grid-search over the hyperparameter space.
 
     Args:
         model: to evaluate according to its `config`.
         cross_args: kwargs for cross-validation.
         
+    Returns:
+        Tuple of best train, test hyperparameters.
 
     Produces:
         Validation results in a .json file.
@@ -30,28 +32,38 @@ def sweep(model: Type[Model], **cross_args):
     previous = check_previous(filename, results)
 
     # Try every combination of parameters
-    names, configs = zip(*model.config.items())
-    for values in product(*(possible(config) for config in configs)):
-        params = {name: value for name, value in zip(names, values)}
+    best = (-float('inf'), {}, {})
+    for params in all_possible(model.config, True):
         print(f"\nParameters: {params}")
         
         # Check if result already exists
         found = None
         def not_found(item):
             nonlocal found
-            score = item['score']
-            del item['score']
+            if 'scores' not in item:
+                return False
+            score = item['scores']
+            del item['scores']
             if fnd := item == params:
                 print("Found in previous sweep")
                 found = score
-            item['score'] = score
+            item['scores'] = score
             return not fnd
         previous = list(filter(not_found, previous))
 
         # Run cross-validation with the chosen hyperparameters
         try:
-            params['score'] = found or cross_validate(lambda fees: model(fees, **params), **cross_args)
-            print(f"Result: {params['score']}")
+            if not found:
+                found = list(all_possible(model.config, False))
+                scores = cross_validate(lambda fees: model(fees, **params), model_hypers=found, **cross_args)
+                for pars, score in zip(found, scores):
+                    pars['score'] = score
+            for pars in found:
+                score = pars['score']
+                del pars['score']
+                best = max(best, (eval(score), dict(params), dict(pars)))
+                pars['score'] = score
+            params['scores'] = found
         except KeyboardInterrupt:
             break
         except Exception as e:
@@ -60,13 +72,20 @@ def sweep(model: Type[Model], **cross_args):
         results['sweep'].append(params)
         
         # Save results to a file
-        with open(filename, 'w') as outfile:
-            dump(results, outfile, indent=4)
+        #with open(filename, 'w') as outfile:
+        #    dump(results, outfile, indent=4)
     
     else:
         print("Finished sweep!")
-        return
+        return best[1:]
     print("\nTerminated")
+
+
+def all_possible(model_config, train=True):
+    conf = {name: config for name, config in model_config.items() if config['train'] == train}
+    names, configs = zip(*conf.items())
+    for values in product(*(possible(config) for config in configs)):
+        yield {name: value for name, value in zip(names, values)}
 
 
 def possible(config):

@@ -1,6 +1,6 @@
-from model import Model
+from .model import Model
 
-from tcn import TCN, tcn_full_summary # file is named tcn_ to avoid conflict with this package
+from tcn import TCN     # file is named tcn_ to avoid conflict with this package
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from tensorflow import keras
@@ -9,11 +9,12 @@ from tensorflow import keras
 class TCN_(Model):
     """Stock predict using TCN, use on algo-trading."""
     config = {
-        "filters": {"min": 8, "max": 128, "by": 2, "log": True},
-        "ker_size": {"min": 1, "max": 16, "by": 2, "log": True},
+        'filters': {'min': 16, 'max': 64, 'by': 2, 'log': True, 'train': True},
+        'ker_size': {'min': 2, 'max': 8, 'by': 2, 'log': True, 'train': True},
+        'window': {'min': 25, 'max': 100, 'by': 25, 'log': False, 'train': True},
+        'all_in': {'min': 0, 'max': 1, 'by': 1, 'log': False, 'train': False},
+        'alpha': {'min': 1e2, 'max': 128e2, 'by': 2, 'log': True, 'train': False},
     }
-    window = 60
-    alpha = 1e3
 
 
     def train(self, stocks, texts):
@@ -48,20 +49,22 @@ class TCN_(Model):
             keras.layers.Dense(1, activation='linear')
         ])
         self.model.compile(optimizer='adam',loss='mean_squared_error')
-        tcn_full_summary(self.model)
         self.model.fit(X_train,y_train,epochs=20,batch_size=32)
 
 
-    def test(self, stock, text, portfolio):
+    def test(self, stock, text, portfolio, alpha=1e3, all_in=False):
         """Predict next day's price and trade."""
         predicted_diff = self.pred[self.test_idx]
         self.test_idx += 1
-        return [np.tanh(self.alpha*predicted_diff).item()] * len(stock)
+        fun = round if all_in else lambda x: x
+        return [fun(np.tanh(alpha*predicted_diff).item())] * len(stock)
 
 
-    def test_all(self, stock, text, index):
+    def test_all(self, stock, text, index, **hyper):
         """Predict in batches using the model."""
-        if not stock: return 0
+        self.test_idx = 0
+        if hasattr(self, 'pred'): return
+        if not stock: return
         stock = stock[0]
         self.pred = np.zeros((stock.shape[0]-index, 1))
         prices = stock['close'].values[::].reshape(len(stock), 1)
@@ -72,4 +75,3 @@ class TCN_(Model):
         predicted_diff = self.model(np.array(X_test))
         predicted_diff = self.Ms.inverse_transform(predicted_diff)
         self.pred[-predicted_diff.shape[0]:] = predicted_diff
-        self.test_idx = 0

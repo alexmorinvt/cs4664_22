@@ -12,7 +12,10 @@ class Model:
     Requires defining the following variables:
     * `config`: hyperparameters for sweeps
     """
-    config = {'null': {'min': 0, 'max': 0, 'by': 1, 'log': False}}
+    config = {
+        'null-train': {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': True},
+        'null-test':  {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': False},
+    }
 
 
     def __init__(self, fees: list, **hyper):
@@ -44,7 +47,7 @@ class Model:
         raise NotImplementedError
 
 
-    def test(self, stock: list, text: list, portfolio: List[float]) -> List[float]:
+    def test(self, stock: list, text: list, portfolio: List[float], **hyper) -> List[float]:
         """Test the model.
 
         Receive a single data point and make one prediction.
@@ -55,14 +58,15 @@ class Model:
             portfolio: amounts of each resource available.
                 0-n: stock amounts, n+1: cash amount.
                 Uses latest 'close' as current exchange rate.
+            hyper: inference hyperparameters.
         
         Returns:
             Amount to buy/sell for each stock
         """
         raise NotImplementedError
-    
 
-    def test_all(self, stock, text, index):
+
+    def test_all(self, stock, text, index, **hyper):
         """Super secret function (test model in parallel).
         
         Receive all test data and do necessary preprocessing.
@@ -75,5 +79,6 @@ class Model:
             stock, text: same as in `test`.
                 Only the last of the provided points.
             index: location of train-validation split.
+            hyper: inference hyperparameters.
         """
         pass

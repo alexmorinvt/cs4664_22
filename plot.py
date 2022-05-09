@@ -1,9 +1,9 @@
-from matplotlib.pyplot import margins, tight_layout
+import matplotlib.pyplot as plt
 import pandas as pd
 import mplfinance as fplt
 
-DIR = "./DISPLAY/transform/"
 
+DIR = "./DISPLAY/transform/"
 
 # Load data
 stock = pd.read_csv("./DATA/NFLX_1min_2years.csv", parse_dates=True)
@@ -33,7 +33,6 @@ stock = stock[:-1]
 candlestick(stock[1079:1020:-1], 'Transformed', 'diff(log(NFLX))', 'transformed')
 
 # Welch periodogram
-import matplotlib.pyplot as plt
 from scipy.signal import welch
 _, Pxx_spec = welch(stock[['close']].values.reshape(-1), 1.0, 'flattop', 20000, scaling='spectrum')
 plt.semilogy(np.sqrt(Pxx_spec))
@@ -42,3 +41,31 @@ plt.xlabel('Period')
 plt.ylabel('Linear spectrum [V RMS]')
 plt.savefig(f"{DIR}periodogram.pdf")
 plt.show()
+
+# Alpha comparison
+from json import load
+with open('./SWEEPS/TCN_.json') as infile:
+    for result in load(infile)['sweep']:
+        if (result['filters'] == 16 and
+            result['ker_size'] == 8 and
+            result['window'] == 25):
+            break
+from statistics import stdev
+mean_all_in, mean_some_in = [], []
+std_all_in, std_some_in = [], []
+for param in result['scores']:
+    dest = [mean_all_in, std_all_in] if param['all_in'] else [mean_some_in, std_some_in]
+    score = [(10**x - 1) * 100 for x in param['score']]
+    mean, std = sum(score) / len(score), stdev(score)
+    dest[0].append((param['alpha'], mean))
+    dest[1].append((param['alpha'], mean-std, mean+std))
+plt.xscale('log')
+t = lambda l: zip(*l)
+plt.plot(*t(mean_some_in), "C0", label="Gradual")
+plt.plot(*t(mean_all_in), "C1", label="All in")
+plt.fill_between(*t(std_some_in), color="C0", alpha=0.25)
+plt.fill_between(*t(std_all_in), color="C1", alpha=0.25)
+plt.legend()
+plt.xlabel("Alpha")
+plt.ylabel("Percent increase")
+plt.savefig(f"./DISPLAY/alpha.pdf")
