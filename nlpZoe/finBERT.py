@@ -38,7 +38,7 @@ for i, line in tqdm(enumerate(netflix['headline'])):
     #data.append(['date': netflix.iloc[i]['date'], 'time': netflix.iloc[i]['time'], 'headline':line,'pos':list['pos'],'neg':list['neg'],'neu':list['neu']},ignore_index=True)
 
 df = pd.DataFrame(columns =['date', 'time','headline', 'positive','negative','neutral'], data=data)
-df.to_csv('../DATA/netflix_bert_sen.csv')
+df.to_csv('../DATA/NFLX_bert_sen.csv')
 #print(df)
 
 #senData[0]

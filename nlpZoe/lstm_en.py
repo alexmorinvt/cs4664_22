@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from finBERT import findPercentageBySentences
 from util import data_preprocessing
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+
+model = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert",output_hidden_states=True)
+
 
 
 
@@ -24,21 +30,27 @@ for s in stonks:
     stock = pd.read_csv("./new_combine.csv")
     data=[]
     for i, line in tqdm(enumerate(stock['title'])):
+        
         line=data_preprocessing(line)
-        list=findPercentageBySentences(line)
+        encoding = tokenizer(line, return_tensors="pt")
+
+        # forward pass
+        outputs = model(**encoding)
+        # get feature vector 
+        feature_vector = outputs.hidden_states[0][:,:,-1]
+        print(outputs.hidden_states[1].shape)
         #list = {'pos': 0.8, 'neg': 0.1, 'neu': 0.1}
         #senData[i]=list
-        data.append([stock.iloc[i]['date_time'], stock.iloc[i]['open'],stock.iloc[i]['high'],stock.iloc[i]['low'],stock.iloc[i]['close'],stock.iloc[i]['volume'],line,list['pos'],list['neg'],list['neu']])
+        #data.append([stock.iloc[i]['date_time'], stock.iloc[i]['open'],stock.iloc[i]['high'],stock.iloc[i]['low'],stock.iloc[i]['close'],line,list['pos'],list['neg'],list['neu']])
         #data.append(['date': netflix.iloc[i]['date'], 'time': netflix.iloc[i]['time'], 'headline':line,'pos':list['pos'],'neg':list['neg'],'neu':list['neu']},ignore_index=True)
 
-    df = pd.DataFrame(columns =['date','open','high','low','close','volume','headline', 'positive','negative','neutral'], data=data)
+    df = pd.DataFrame(columns =['date','open','high','low','close','headline', 'positive','negative','neutral'], data=data)
     #print(stock.iloc[0])
     df.to_csv('new_sen.csv',index=False)
     stock=df
     stock.dropna()
 
-
-    X = stock[['close','volume','neutral', 'positive', 'negative']]#'neutral', 'positive', 'negative','open','high','low',
+    X = stock[['close','open','high','low']]#'neutral', 'positive', 'negative','open','high','low',
     #print(X[0:5])
     Y = stock['close'].values[::-1].reshape(len(stock), 1)
     #print(Y[0:5])
@@ -79,7 +91,7 @@ for s in stonks:
     print(val[2:5])
     
     model = keras.models.Sequential()
-    model.add(keras.layers.LSTM(units=50,return_sequences=True,input_shape=(60, 5)))
+    model.add(keras.layers.LSTM(units=50,return_sequences=True,input_shape=(60, 4)))
     model.add(keras.layers.Dropout(0.2))
     #model.add(keras.layers.LSTM(units=50,return_sequences=True))
     #model.add(keras.layers.Dropout(0.2))

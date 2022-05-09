@@ -5,3 +5,5 @@ mplfinance
 sklearn
 tensorflow-gpu
 keras-tcn
+torch
+transformers
