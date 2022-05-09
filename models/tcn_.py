@@ -1,4 +1,4 @@
-from model import Model
+from .model import Model
 
 from tcn import TCN     # file is named tcn_ to avoid conflict with this package
 import numpy as np

@@ -1,4 +1,4 @@
-from model import Model
+from models import Model
 
 
 class Simulation:

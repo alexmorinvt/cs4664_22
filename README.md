@@ -32,5 +32,5 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python3 simulate.py [TODO: arguments]
+python3 driver.py [TODO: arguments]
 ```

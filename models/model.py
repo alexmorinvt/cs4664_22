@@ -12,7 +12,10 @@ class Model:
     Requires defining the following variables:
     * `config`: hyperparameters for sweeps
     """
-    config = {'null': {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': True}}
+    config = {
+        'null-train': {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': True},
+        'null-test':  {'min': 0, 'max': 0, 'by': 1, 'log': False, 'train': False},
+    }
 
 
     def __init__(self, fees: list, **hyper):

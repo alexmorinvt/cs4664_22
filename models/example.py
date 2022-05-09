@@ -1,4 +1,4 @@
-from model import Model
+from .model import Model
 
 
 class Null(Model):
@@ -28,3 +28,17 @@ class Hold(Model):
     def test(self, stock, text, portfolio, **hyper):
         """Buy equal amounts."""
         return [portfolio[-1] and 1 / len(stock)] * len(stock)
+
+
+class Combine(Model):
+    """NLP data combining example."""
+
+    def train(self, stock, text):
+        """Combine data and print."""
+        from utils.data import combine
+        combined = combine(stock, text) # Also try fillna=True
+        print(combined)
+
+    def test(self, stock, text, portfolio):
+        """TODO: something."""
+        return [0] * len(stock)

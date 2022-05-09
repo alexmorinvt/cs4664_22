@@ -3,25 +3,31 @@
 Partly based on our work for MCM 2022 problem C.
 Refer to README.md for installation instructions.
 """
+from models import TCN
+from utils.crossval import none, sliding
+from utils.simulate import Simulation, evaluate
+from statistics import mean, median
 
-# TODO: command-line arguments
+
 # NOTE: only NFLX (for now)
 # NOTE: only specific section (for now)
 from utils.data import load_data
 names = ['NFLX']
 stock, text = load_data(names, '2021-09-07', '2021-09-23')
+sim = Simulation([0.0], 1000)
 
 # Create new model
-# TODO: choose which model to load
-from example_models import Null, Hold
-from tcn_model import TCN_
-from combine_example import Combine
+# TODO: command-line arguments - choose which model to load
+model = TCN
+cval = sliding
+avg = mean
+
+# Run automatic hyperparameter tuning
+from utils.hyper import sweep
+args, kwargs = sweep(model, avg, sim=sim, train_val=(stock, text), partition=cval, split=0.8, folds=5)
+print(args, kwargs)
 
 # Evaluate the model
-from utils.simulate import Simulation, evaluate
-from utils.crossval import none
-sim = Simulation([0.0], 1000)
-model, args, kwargs = TCN_, {'filters': 32, 'ker_size': 8, 'window': 60}, {'alpha': 1e3, 'all_in': True}
 for fold, index in none((stock, text), 0.8):
     totals, = evaluate(model(sim.fees, **args), sim, fold, index, [kwargs])
 
@@ -35,8 +41,3 @@ plt.ylabel('%s Portfolio value' % (s))
 plt.legend()
 plt.savefig('portfolio.pdf')
 plt.show()
-
-# Try hyperparameter tuning with TCN model
-from utils.hyper import sweep
-from utils.crossval import sliding
-sweep(model, sim=sim, train_val=(stock, text), partition=sliding, split=0.8, folds=5)

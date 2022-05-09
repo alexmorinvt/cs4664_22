@@ -7,19 +7,21 @@ from json import dump, load, JSONDecodeError
 import os
 
 from utils.crossval import cross_validate
-from model import Model
-from example_models import Hold
+from models import Model
+from models import Hold
 
 
 SWEEP_DIR = "./SWEEPS/"
 
-def sweep(model: Type[Model], **cross_args):
+def sweep(model: Type[Model], eval, **cross_args):
     """Grid-search over the hyperparameter space.
 
     Args:
         model: to evaluate according to its `config`.
         cross_args: kwargs for cross-validation.
         
+    Returns:
+        Tuple of best train, test hyperparameters.
 
     Produces:
         Validation results in a .json file.
@@ -30,6 +32,7 @@ def sweep(model: Type[Model], **cross_args):
     previous = check_previous(filename, results)
 
     # Try every combination of parameters
+    best = (-float('inf'), {}, {})
     for params in all_possible(model.config, True):
         print(f"\nParameters: {params}")
         
@@ -54,6 +57,7 @@ def sweep(model: Type[Model], **cross_args):
                 found = list(all_possible(model.config, False))
                 scores = cross_validate(lambda fees: model(fees, **params), model_hypers=found, **cross_args)
                 for pars, score in zip(found, scores):
+                    best = max(best, (eval(score), dict(params), dict(pars)))
                     pars['score'] = score
             params['scores'] = found
         except KeyboardInterrupt:
@@ -69,7 +73,7 @@ def sweep(model: Type[Model], **cross_args):
     
     else:
         print("Finished sweep!")
-        return
+        return best[1:]
     print("\nTerminated")
 
 
