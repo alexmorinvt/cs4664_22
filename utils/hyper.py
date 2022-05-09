@@ -40,7 +40,7 @@ def sweep(model: Type[Model], eval, **cross_args):
         found = None
         def not_found(item):
             nonlocal found
-            if not hasattr(item, 'scores'):
+            if 'scores' not in item:
                 return False
             score = item['scores']
             del item['scores']
@@ -57,8 +57,12 @@ def sweep(model: Type[Model], eval, **cross_args):
                 found = list(all_possible(model.config, False))
                 scores = cross_validate(lambda fees: model(fees, **params), model_hypers=found, **cross_args)
                 for pars, score in zip(found, scores):
-                    best = max(best, (eval(score), dict(params), dict(pars)))
                     pars['score'] = score
+            for pars in found:
+                score = pars['score']
+                del pars['score']
+                best = max(best, (eval(score), dict(params), dict(pars)))
+                pars['score'] = score
             params['scores'] = found
         except KeyboardInterrupt:
             break
@@ -68,8 +72,8 @@ def sweep(model: Type[Model], eval, **cross_args):
         results['sweep'].append(params)
         
         # Save results to a file
-        with open(filename, 'w') as outfile:
-            dump(results, outfile, indent=4)
+        #with open(filename, 'w') as outfile:
+        #    dump(results, outfile, indent=4)
     
     else:
         print("Finished sweep!")
