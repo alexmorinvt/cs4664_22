@@ -9,8 +9,8 @@ Spring '22 ML Capstone Project
 - ARIMA: A notebook that allows you to run the arima model on NFLX data
 - DATA: Data used throughout the project
 
-- * DATA_APRIL: Data used exclusively for the final test and the decision graphs
-- * LSTM-CNN: Our final model
+- \* DATA_APRIL: Data used exclusively for the final test and the decision graphs
+- \* LSTM-CNN: Our final model
        run python lstm.py to run the model
        
 - LSTM_TCN: Our LSTM and TCN Models
