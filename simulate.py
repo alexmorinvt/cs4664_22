@@ -22,9 +22,8 @@ from utils.simulate import Simulation, evaluate
 from utils.crossval import none
 sim = Simulation([0.0], 1000)
 model, args, kwargs = TCN_, {'filters': 32, 'ker_size': 8, 'window': 60}, {'alpha': 1e3, 'all_in': True}
-totals = []
-#for fold, index in none((stock, text), 0.8):
-#    totals, = evaluate(model(sim.fees, **args), sim, fold, index, [kwargs])
+for fold, index in none((stock, text), 0.8):
+    totals, = evaluate(model(sim.fees, **args), sim, fold, index, [kwargs])
 
 # Plot assets over time
 import matplotlib.pyplot as plt
